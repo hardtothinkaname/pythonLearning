@@ -13,8 +13,8 @@ from PIL import ImageGrab
 
 # 先对图片做一些简单的预处理
 # 读出预先准备的图片
-img = np.array(ImageGrab.grab())
-# img = cv2.imread(r'D:\pythonProject\pythonLearning\gameCheat\findDifference\picSource\pic5.PNG', cv2.IMREAD_COLOR)
+# img = np.array(ImageGrab.grab())
+img = cv2.imread(r'D:\pythonProject\pythonLearning\gameCheat\findDifference\picSource\pic5.PNG', cv2.IMREAD_COLOR)
 # 转换图片的格式，从BGR转换为HSV
 img_hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 _, _, img_value = cv2.split(img_hsv)
@@ -51,7 +51,7 @@ img_subtract_abs_gray = cv2.cvtColor(img_subtract_abs, cv2.COLOR_BGR2GRAY)
 
 # 没想到一把滤波去除效果好了很多。
 # 现在把高这的区域选出来。
-_, dst = cv2.threshold(img_subtract_abs_gray, 30, 255, cv2.THRESH_BINARY)
+_, dst = cv2.threshold(img_subtract_abs, 30, 255, cv2.THRESH_BINARY)
 
 kernel = np.ones((5, 5), np.uint8)
 dst_closing = cv2.morphologyEx(dst, cv2.MORPH_CLOSE, kernel)
@@ -60,15 +60,16 @@ dst_closing = cv2.morphologyEx(dst, cv2.MORPH_CLOSE, kernel)
 rect = np.ones((region_height - 20, region_width - 20), np.uint8) * 255
 rect_zero = np.zeros((region_height, region_width), np.uint8)
 rect_with_border = cv2.rectangle(rect_zero, (5, 5), (region_width - 5, region_height - 5), 255, -1)
-rect_without_border = cv2.bitwise_and(rect_with_border, dst_closing,)
+b_rect, g_rect, r_rect = cv2.split(dst_closing)
+dst_or = cv2.bitwise_or(b_rect, cv2.bitwise_or(g_rect, r_rect))
+rect_without_border = cv2.bitwise_and(rect_with_border, dst_or)
 
-# print('regions:', regions)
-plt.imshow(img_subtract_abs)
+# plt.imshow(rect_without_border)
 # plt.subplot(121)
 # plt.imshow(img_detect1_int16)
 # plt.subplot(122)
 # plt.imshow(img_detect2_int16)
-plt.show()
+# plt.show()
 
 # 因为一开始的时候是，将图片转换成graY形式来处理的，这样就分别不了红绿色。
 # 现在做一下调整，调整后的程序如上。
@@ -87,7 +88,6 @@ obj_msg_select_sorted_add_bias = np.add(obj_msg_select_sorted, bias)
 print(obj_msg_select_sorted)
 print(obj_msg_select_sorted_add_bias)
 
-# 是否显示图片
 show_pic = True
 if show_pic:
 
