@@ -7,15 +7,19 @@
 # v2 经过上一版本，有一个初步的程序了，但是误检较为严重，所以，现在尝试去除滤波进行测试
 # v3 现一版本需要直接屏幕截图，并且检测
 # v4 版本检测时，在RGB中每个通道检测后再OR操作
+# v5 此版本是做模拟鼠标的点击操作
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 from PIL import ImageGrab
+import pyautogui
+import time
+
 
 # 先对图片做一些简单的预处理
 # 读出预先准备的图片
 img = np.array(ImageGrab.grab())
-# img = cv2.imread(r'D:\pythonProject\pythonLearning\gameCheat\findDifference\picSource\pic5.PNG', cv2.IMREAD_COLOR)
+# img = cv2.imread(r'D:\pythonProject\pythonLearning\gameCheat\findDifference\picSource\pic8.PNG', cv2.IMREAD_COLOR)
 # 转换图片的格式，从BGR转换为HSV
 img_hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 _, _, img_value = cv2.split(img_hsv)
@@ -48,7 +52,7 @@ img_detect2_int16 = np.int16(img_detect2)
 img_subtract = np.subtract(img_detect1_int16, img_detect2_int16)
 img_subtract_abs = np.uint8(np.abs(img_subtract))
 
-img_subtract_abs_gray = cv2.cvtColor(img_subtract_abs, cv2.COLOR_BGR2GRAY)
+# img_subtract_abs_gray = cv2.cvtColor(img_subtract_abs, cv2.COLOR_BGR2GRAY)
 
 # 没想到一把滤波去除效果好了很多。
 # 现在把高这的区域选出来。
@@ -65,11 +69,11 @@ b_rect, g_rect, r_rect = cv2.split(dst_closing)
 dst_or = cv2.bitwise_or(b_rect, cv2.bitwise_or(g_rect, r_rect))
 rect_without_border = cv2.bitwise_and(rect_with_border, dst_or)
 
-# plt.imshow(rect_without_border)
 # plt.subplot(121)
 # plt.imshow(img_detect1_int16)
 # plt.subplot(122)
 # plt.imshow(img_detect2_int16)
+# plt.imshow(dst_or)
 # plt.show()
 
 # 因为一开始的时候是，将图片转换成graY形式来处理的，这样就分别不了红绿色。
@@ -89,7 +93,7 @@ obj_msg_select_sorted_add_bias = np.add(obj_msg_select_sorted, bias)
 print(obj_msg_select_sorted)
 print(obj_msg_select_sorted_add_bias)
 
-show_pic = True
+show_pic = False
 if show_pic:
 
     for obj_rect in obj_msg_select_sorted_add_bias:
@@ -97,4 +101,11 @@ if show_pic:
     img_detect2 = cv2.cvtColor(img_detect2, cv2.COLOR_BGR2RGB)
     plt.imshow(img_detect2)
     plt.show()
+
+
+en_click = True
+if en_click:
+    for obj_rect in obj_msg_select_sorted_add_bias:
+        pyautogui.click(obj_rect[0] + 5 + regions1[0], obj_rect[1] + 5 + regions1[1])
+        time.sleep(0.5)
 
